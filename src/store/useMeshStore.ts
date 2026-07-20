@@ -32,16 +32,24 @@ export interface SceneObject {
 interface MeshState {
   objects: SceneObject[];
   selectedId: string | null;
-  transformMode: 'translate' | 'rotate' | 'scale' | null;
+  globalWireframe: boolean;
+  transformMode: 'translate' | 'rotate' | 'scale' | 'measure' | null;
+  isScaleLocked: boolean;
+  measurePoints: [number, number, number][];
+  actionTrigger: string | null;
   isLoading: boolean;
   error: string | null;
   
   loadMeshFromFile: (filePath: string) => Promise<void>;
   loadPrimitive: (type: 'cube' | 'sphere' | 'cylinder') => void;
   updateMaterial: (props: Partial<MaterialProps>) => void;
-  setTransformMode: (mode: 'translate' | 'rotate' | 'scale' | null) => void;
+  setTransformMode: (mode: 'translate' | 'rotate' | 'scale' | 'measure' | null) => void;
   updateTransformData: (id: string, data: Partial<TransformData>) => void;
+  toggleScaleLock: () => void;
   selectObject: (id: string | null) => void;
+  addMeasurePoint: (point: [number, number, number]) => void;
+  triggerAction: (action: string) => void;
+  clearAction: () => void;
   clearScene: () => void;
 }
 
@@ -64,7 +72,11 @@ const defaultTransform: TransformData = {
 export const useMeshStore = create<MeshState>((set) => ({
   objects: [],
   selectedId: null,
+  globalWireframe: false,
   transformMode: 'translate',
+  isScaleLocked: true,
+  measurePoints: [],
+  actionTrigger: null,
   isLoading: false,
   error: null,
   
@@ -128,13 +140,32 @@ export const useMeshStore = create<MeshState>((set) => ({
     }));
   },
 
+  toggleScaleLock: () => set((state) => ({ isScaleLocked: !state.isScaleLocked })),
+
   selectObject: (id) => {
     set({ selectedId: id });
   },
+
+  addMeasurePoint: (point) => {
+    set((state) => {
+      // Mantém no máximo 2 pontos para formar a régua
+      const newPoints = [...state.measurePoints, point];
+      if (newPoints.length > 2) newPoints.shift();
+      return { measurePoints: newPoints };
+    });
+  },
+
+  triggerAction: (action) => {
+    set({ actionTrigger: action });
+    setTimeout(() => set({ actionTrigger: null }), 100);
+  },
+  clearAction: () => set({ actionTrigger: null }),
   
   clearScene: () => set({ 
     objects: [],
     selectedId: null,
     error: null,
+    measurePoints: [],
+    actionTrigger: null
   })
 }));

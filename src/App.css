@@ -136,13 +136,77 @@ button:disabled {
 }
 
 .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.8);
+  color: #ffffff !important;
 }
 
 .icon-btn.active {
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.8);
+  color: #ffffff !important;
+}
+
+.export-card {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -10px rgba(0,0,0,0.5);
+}
+
+.export-card.obj-card:hover {
+  background: rgba(59, 130, 246, 0.85);
+  border-color: #3b82f6;
+}
+.export-card.obj-card:hover h4, 
+.export-card.obj-card:hover p, 
+.export-card.obj-card:hover .card-icon {
+  color: #ffffff !important;
+}
+
+.export-card.obj-card .card-icon {
+  color: #3b82f6;
+  margin-bottom: 4px;
+  transition: 0.2s;
+}
+
+.export-card.stl-card:hover {
+  background: rgba(16, 185, 129, 0.85);
+  border-color: #10b981;
+}
+.export-card.stl-card:hover h4, 
+.export-card.stl-card:hover p, 
+.export-card.stl-card:hover .card-icon {
+  color: #ffffff !important;
+}
+
+.export-card.stl-card .card-icon {
+  color: #10b981;
+  margin-bottom: 4px;
+  transition: 0.2s;
+}
+
+.export-card h4 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.export-card p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.4;
+  transition: 0.2s;
 }
 
 .material-btn {

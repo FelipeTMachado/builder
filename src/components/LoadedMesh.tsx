@@ -1,11 +1,16 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { TransformControls } from '@react-three/drei';
 import { useMeshStore, SceneObject } from '../store/useMeshStore';
 
 const SingleObject = ({ obj, isSelected }: { obj: SceneObject, isSelected: boolean }) => {
   const meshRef = useRef<THREE.Group>(null);
-  const { updateTransformData, selectObject, transformMode } = useMeshStore();
+  const transformRef = useRef<any>(null);
+  
+  // Pré-inicializa com a escala salva para nunca multiplicar por zero
+  const startScaleRef = useRef(new THREE.Vector3(...obj.transformData.scale));
+  
+  const { updateTransformData, selectObject, transformMode, isScaleLocked, actionTrigger, clearAction, addMeasurePoint, globalWireframe } = useMeshStore();
 
   const geometry = useMemo(() => {
     if (!obj.meshData) return null;
@@ -28,6 +33,34 @@ const SingleObject = ({ obj, isSelected }: { obj: SceneObject, isSelected: boole
     return geo;
   }, [obj.meshData]);
 
+  // Algoritmo "Settle" (Tarefa 18): Acomoda a malha baseando-se na sua Bounding Box real após as transformações.
+  useEffect(() => {
+    // Settle agora afeta TODOS os objetos da mesa instantaneamente (não apenas o selecionado)
+    if (actionTrigger === 'settle' && meshRef.current) {
+      // Atualiza a matriz do mundo para garantir precisão antes do cálculo
+      meshRef.current.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(meshRef.current);
+      const lowestY = box.min.y;
+      
+      // O offset necessário para o ponto mais baixo encostar no 0
+      const offset = 0 - lowestY;
+      
+      const { position, rotation, scale } = meshRef.current;
+      updateTransformData(obj.id, {
+        position: [position.x, position.y + offset, position.z],
+        rotation: [rotation.x, rotation.y, rotation.z],
+        scale: [scale.x, scale.y, scale.z]
+      });
+    } else if (actionTrigger === 'sync_transforms' && meshRef.current) {
+      const { position, rotation, scale } = meshRef.current;
+      updateTransformData(obj.id, {
+        position: [position.x, position.y, position.z],
+        rotation: [rotation.x, rotation.y, rotation.z],
+        scale: [scale.x, scale.y, scale.z]
+      });
+    }
+  }, [actionTrigger, obj.id, updateTransformData]);
+
   const objectElement = (
     <group 
       ref={meshRef}
@@ -39,6 +72,12 @@ const SingleObject = ({ obj, isSelected }: { obj: SceneObject, isSelected: boole
         onClick={(e) => {
           e.stopPropagation();
           selectObject(obj.id);
+        }}
+        onPointerDown={(e) => {
+          if (transformMode === 'measure') {
+            e.stopPropagation();
+            addMeasurePoint(e.point.toArray());
+          }
         }}
       >
         {/* Geometria Dinâmica (Mesh importada ou Primitiva criada) */}
@@ -56,6 +95,7 @@ const SingleObject = ({ obj, isSelected }: { obj: SceneObject, isSelected: boole
           metalness={obj.materialProps.metalness}
           transmission={obj.materialProps.transmission}
           transparent={obj.materialProps.transparent}
+          wireframe={globalWireframe}
           ior={1.5}
           thickness={1.0}
         />
@@ -68,13 +108,47 @@ const SingleObject = ({ obj, isSelected }: { obj: SceneObject, isSelected: boole
       {objectElement}
       
       {/* Acopla o Gizmo de transformação DIRETAMENTE no objeto alvo (sem criar wrappers) */}
-      {isSelected && transformMode && (
+      {isSelected && transformMode && transformMode !== 'measure' && (
         <TransformControls 
-          object={meshRef}
+          ref={transformRef}
+          object={meshRef as any}
           mode={transformMode}
-          onDraggingChanged={(e) => {
-            // e.value é true quando começa a arrastar, e false quando o usuário solta o objeto
-            if (!e?.value && meshRef.current) {
+          onChange={() => {
+            // Sincronização Proporcional de Escala (Mantendo Aspect Ratio)
+            if (transformMode === 'scale' && isScaleLocked && meshRef.current && transformRef.current) {
+              const axis = transformRef.current.axis;
+              
+              if (axis && axis !== 'XYZ') {
+                const scale = meshRef.current.scale;
+                const start = startScaleRef.current;
+                
+                // Evita divisão por zero
+                if (start.x === 0 || start.y === 0 || start.z === 0) return;
+                
+                // Calcula o multiplicador pegando o primeiro eixo relevante sendo puxado (mesmo se for diagonal como 'XY')
+                let multiplier = 1;
+                if (axis.includes('X')) multiplier = scale.x / start.x;
+                else if (axis.includes('Y')) multiplier = scale.y / start.y;
+                else if (axis.includes('Z')) multiplier = scale.z / start.z;
+                
+                // Aplica o multiplicador nos 3 eixos simultaneamente
+                scale.set(
+                  start.x * multiplier,
+                  start.y * multiplier,
+                  start.z * multiplier
+                );
+              }
+            }
+          }}
+          onDraggingChanged={(e: any) => {
+            // Captura robusta do estado de Drag, independente da versão do Drei/Three
+            const isDragging = typeof e === 'boolean' ? e : (e?.value ?? transformRef.current?.dragging);
+            
+            if (isDragging && meshRef.current) {
+              // Quando começa a arrastar, tira a fotografia da escala atual real
+              startScaleRef.current.copy(meshRef.current.scale);
+            } else if (!isDragging && meshRef.current) {
+              // Quando solta, salva os dados no estado global do Zustand
               const { position, rotation, scale } = meshRef.current;
               updateTransformData(obj.id, {
                 position: [position.x, position.y, position.z],
