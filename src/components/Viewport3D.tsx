@@ -9,7 +9,7 @@ function MinimalistShape() {
   const meshRef = useRef<THREE.Mesh>(null);
 
   // Animação suave de rotação (Micro-animação)
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (meshRef.current) {
       meshRef.current.rotation.x += delta * 0.2;
       meshRef.current.rotation.y += delta * 0.3;
@@ -36,6 +36,8 @@ export function Viewport3D() {
     <Canvas
       camera={{ position: [0, 0, 5], fov: 50 }}
       style={{ width: '100%', height: '100%' }}
+      dpr={[1, 1.5]}
+      gl={{ powerPreference: "high-performance", antialias: true }}
     >
       {/* Iluminação Premium baseada na paleta */}
       <ambientLight intensity={0.5} color="#3b82f6" /> {/* Luz ambiente azulada */}

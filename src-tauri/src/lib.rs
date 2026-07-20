@@ -13,7 +13,7 @@ async fn load_mesh(path: String) -> Result<mesh_loader::MeshData, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Workaround para erro de protocolo do Wayland (GNOME/Nvidia) no WebKitGTK (Erro 71)
+    // Restaurando workaround forçado para placas NVIDIA (Erro 71 / GBM falha)
     #[cfg(target_os = "linux")]
     std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
 
