@@ -1,6 +1,6 @@
 :root {
-  --bg-color: #0f172a; /* Azul escuro profundo */
-  --panel-bg: rgba(30, 41, 59, 0.4);
+  --bg-color: #0f172a;
+  --panel-bg: rgba(30, 41, 59, 0.7);
   --panel-border: rgba(255, 255, 255, 0.08);
   --accent-green: #10b981;
   --accent-blue: #3b82f6;
@@ -8,20 +8,11 @@
   --text-secondary: #94a3b8;
   
   --glass-blur: blur(16px);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
   color-scheme: dark;
   color: var(--text-primary);
   background-color: var(--bg-color);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -39,17 +30,13 @@ body {
   display: flex;
 }
 
-/* Glassmorphism Classes */
 .glass-panel {
   background: var(--panel-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--panel-border);
-  box-shadow: var(--glass-shadow);
-  border-radius: 12px;
 }
 
-/* Base Layout Shell */
 .app-container {
   display: flex;
   width: 100%;
@@ -57,87 +44,68 @@ body {
   position: relative;
 }
 
+.canvas-area {
+  flex: 1;
+  position: relative;
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+}
+
 .sidebar {
-  width: 280px;
-  height: calc(100% - 32px);
-  margin: 16px;
+  width: 320px;
+  height: 100%;
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
+  gap: 24px;
+  border-right: 1px solid var(--panel-border);
   box-sizing: border-box;
+  z-index: 10;
+  overflow-y: auto;
 }
 
-.topbar {
+.toolbar {
   position: absolute;
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 12px 32px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 12px;
+  z-index: 20;
 }
 
-.topbar h1 {
+.toolbar-divider {
+  width: 1px;
+  background: var(--panel-border);
+  margin: 0 4px;
+}
+
+h1 {
   font-size: 1.2rem;
-  margin: 0;
+  margin: 0 0 24px 0;
   font-weight: 600;
   letter-spacing: 2px;
-  text-transform: uppercase;
   color: var(--text-primary);
 }
 
-.canvas-area {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Typography & Elements */
 h2 {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-top: 0;
-  margin-bottom: 8px;
+  margin: 0 0 12px 0;
   font-weight: 600;
-}
-
-input {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--panel-border);
-  color: var(--text-primary);
-  padding: 10px 16px;
-  border-radius: 8px;
-  outline: none;
-  font-family: inherit;
-  transition: border-color 0.2s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-input:focus {
-  border-color: var(--accent-green);
 }
 
 button {
-  background: var(--accent-green);
-  color: #000;
+  background: var(--accent-blue);
+  color: #fff;
   border: none;
   padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
@@ -145,20 +113,47 @@ button {
 
 button:hover {
   filter: brightness(1.1);
-  transform: translateY(-1px);
 }
 
-button:active {
-  transform: translateY(1px);
+button:disabled {
+  background: var(--panel-border);
+  color: var(--text-secondary);
+  cursor: not-allowed;
 }
 
-.result-msg {
-  margin-top: 16px;
-  padding: 12px;
+.icon-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  padding: 8px;
   border-radius: 8px;
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--accent-green);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  text-align: center;
-  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: auto;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.icon-btn.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+}
+
+.material-btn {
+  flex: 1;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--panel-border);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  padding: 8px;
+}
+.material-btn.active {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
 }

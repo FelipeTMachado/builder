@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import { TransformControls } from '@react-three/drei';
 import { useMeshStore } from '../store/useMeshStore';
 
 export function LoadedMesh() {
-  const { meshData, primitiveType, materialProps } = useMeshStore();
+  const { meshData, primitiveType, materialProps, transformMode } = useMeshStore();
 
   const geometry = useMemo(() => {
     if (!meshData) return null;
@@ -28,15 +29,15 @@ export function LoadedMesh() {
 
   if (!geometry && !primitiveType) return null;
 
-  return (
+  const objectElement = (
     <mesh>
-      {/* Geometria Dinâmica (Mesh importada ou Primitiva criada) */}
+      {/* Geometria Dinâmica */}
       {geometry && <primitive object={geometry} attach="geometry" />}
       {!geometry && primitiveType === 'cube' && <boxGeometry args={[2, 2, 2]} />}
       {!geometry && primitiveType === 'sphere' && <sphereGeometry args={[1.5, 32, 32]} />}
       {!geometry && primitiveType === 'cylinder' && <cylinderGeometry args={[1.5, 1.5, 3, 32]} />}
 
-      {/* Material Físico Premium responsivo ao estado do Zustand */}
+      {/* Material Físico Premium */}
       <meshPhysicalMaterial 
         color={materialProps.color} 
         side={THREE.DoubleSide} 
@@ -50,4 +51,16 @@ export function LoadedMesh() {
       />
     </mesh>
   );
+
+  // Se um modo de transformação estiver ativo, encapsula o objeto no Gizmo do Three.js
+  if (transformMode) {
+    return (
+      <TransformControls mode={transformMode}>
+        {objectElement}
+      </TransformControls>
+    );
+  }
+
+  // Caso contrário, renderiza o objeto livremente sem controles espaciais
+  return objectElement;
 }
