@@ -11,12 +11,15 @@ function App() {
     updateMaterial,
     setTransformMode,
     isLoading, 
-    clearMesh, 
-    meshData, 
-    primitiveType,
-    materialProps,
+    clearScene, 
+    objects,
+    selectedId,
     transformMode
   } = useMeshStore();
+
+  const selectedObject = objects.find(o => o.id === selectedId);
+  const materialProps = selectedObject?.materialProps || { color: '#000', roughness: 0.5, metalness: 0, transmission: 0, transparent: false };
+  const hasObjects = objects.length > 0;
 
   async function handleOpenFile() {
     const selectedPath = await open({ multiple: false });
@@ -24,8 +27,6 @@ function App() {
       await loadMeshFromFile(selectedPath);
     }
   }
-
-  const hasObject = meshData !== null || primitiveType !== null;
 
   return (
     <div className="app-container">
@@ -42,13 +43,15 @@ function App() {
           </button>
         </div>
 
-        {hasObject && (
+        {hasObjects && (
           <>
             <div>
               <h2>Materiais e Acabamento</h2>
+              {!selectedId && <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Nenhum objeto selecionado.</p>}
               
-              {/* Paleta de Cores */}
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+              <div style={{ opacity: selectedId ? 1 : 0.4, pointerEvents: selectedId ? 'auto' : 'none' }}>
+                {/* Paleta de Cores */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
                 {['#3b82f6', '#10b981', '#f43f5e', '#eab308', '#f8fafc', '#0f172a'].map(color => (
                   <div 
                     key={color} 
@@ -78,14 +81,15 @@ function App() {
                   onClick={() => updateMaterial({ roughness: 0.05, metalness: 0.1, transmission: 0.9, transparent: true })}
                 >Vidro</button>
               </div>
+              </div>
             </div>
 
             <div style={{ marginTop: 'auto' }}>
               <button 
-                onClick={clearMesh} 
+                onClick={clearScene} 
                 style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                <Trash2 size={16} /> Excluir Geometria
+                <Trash2 size={16} /> Limpar Cena
               </button>
             </div>
           </>
@@ -113,7 +117,7 @@ function App() {
             className={`icon-btn ${transformMode === 'translate' ? 'active' : ''}`} 
             title="Mover (Translação)"
             onClick={() => setTransformMode('translate')}
-            disabled={!hasObject}
+            disabled={!hasObjects || !selectedId}
           >
             <Move3d size={20} />
           </button>
@@ -121,7 +125,7 @@ function App() {
             className={`icon-btn ${transformMode === 'rotate' ? 'active' : ''}`} 
             title="Rotacionar"
             onClick={() => setTransformMode('rotate')}
-            disabled={!hasObject}
+            disabled={!hasObjects || !selectedId}
           >
             <Rotate3d size={20} />
           </button>
@@ -129,7 +133,7 @@ function App() {
             className={`icon-btn ${transformMode === 'scale' ? 'active' : ''}`} 
             title="Escalar"
             onClick={() => setTransformMode('scale')}
-            disabled={!hasObject}
+            disabled={!hasObjects || !selectedId}
           >
             <Scaling size={20} />
           </button>

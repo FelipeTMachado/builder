@@ -30,7 +30,7 @@ function MinimalistShape() {
 }
 
 export function Viewport3D() {
-  const hasObject = useMeshStore((state) => state.meshData !== null || state.primitiveType !== null);
+  const hasObjects = useMeshStore((state) => state.objects.length > 0);
 
   return (
     <Canvas
@@ -38,6 +38,7 @@ export function Viewport3D() {
       style={{ width: '100%', height: '100%' }}
       dpr={[1, 1.5]}
       gl={{ powerPreference: "high-performance", antialias: true }}
+      onPointerMissed={() => useMeshStore.getState().selectObject(null)}
     >
       {/* Iluminação Premium baseada na paleta */}
       <ambientLight intensity={0.5} color="#3b82f6" /> {/* Luz ambiente azulada */}
@@ -48,7 +49,7 @@ export function Viewport3D() {
       <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
       
       {/* Renderiza a malha real carregada pelo usuário ou Primitiva, ou o placeholder se estiver vazio */}
-      {hasObject ? <LoadedMesh /> : <MinimalistShape />}
+      {hasObjects ? <LoadedMesh /> : <MinimalistShape />}
     </Canvas>
   );
 }
