@@ -22,3 +22,17 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Ambiente (Vite/Rust)
+.env
+.env.*
+!.env.example
+
+# C++ Build outputs (para uso futuro na Sprint 4)
+/build
+/cmake-build-*
+CMakeCache.txt
+CMakeFiles/
+
+# Arquivos temporários e referências
+/tmp/
