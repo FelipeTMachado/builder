@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Box, ArrowDownToLine, Move3d, Rotate3d, Scaling, Trash2, Ruler, Download, Circle, Cylinder, FolderOpen, Lock, Unlock, Printer, Eye } from "lucide-react";
 import "./App.css";
 import { Viewport3D } from "./components/Viewport3D";
+import { TransformPanel } from "./components/TransformPanel";
 import { useMeshStore } from "./store/useMeshStore";
 import { FileBrowser } from './components/FileBrowser';
 
@@ -282,6 +283,9 @@ function App() {
           </div>
 
         <Viewport3D />
+        
+        {/* Painel de Valores Numéricos (estilo 3D Builder) */}
+        <TransformPanel />
       </main>
 
       {/* Modal de Exportação com UX Premium */}

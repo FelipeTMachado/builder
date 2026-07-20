@@ -40,7 +40,7 @@ export function Viewport3D() {
 
   return (
     <Canvas
-      camera={{ position: [0, 0, 5], fov: 50 }}
+      camera={{ position: [0, 20, 30], fov: 45 }}
       style={{ width: '100%', height: '100%' }}
       dpr={[1, 1.5]}
       gl={{ powerPreference: "high-performance", antialias: true }}
@@ -53,8 +53,8 @@ export function Viewport3D() {
 
       {/* Chão / Mesa Profissional */}
       <group position={[0, 0, 0]}>
-        {/* Grade de medição arquitetônica (cor de destaque sutil) */}
-        <gridHelper args={[30, 30, '#10b981', '#334155']} position={[0, -0.01, 0]} />
+        {/* Grade de medição arquitetônica (cor de destaque sutil, 200x200mm) */}
+        <gridHelper args={[200, 200, '#10b981', '#1e293b']} position={[0, -0.01, 0]} />
         
         {/* Sombras de Contato Dinâmicas (Efeito Premium de renderizador moderno) */}
         <ContactShadows 

@@ -27,6 +27,7 @@ export interface SceneObject {
   meshData?: MeshData;
   materialProps: MaterialProps;
   transformData: TransformData;
+  baseSize: [number, number, number];
 }
 
 interface MeshState {
@@ -39,7 +40,9 @@ interface MeshState {
   actionTrigger: string | null;
   isLoading: boolean;
   error: string | null;
+  globalUnit: 'mm' | 'cm';
   
+  setGlobalUnit: (unit: 'mm' | 'cm') => void;
   loadMeshFromFile: (filePath: string) => Promise<void>;
   loadPrimitive: (type: 'cube' | 'sphere' | 'cylinder') => void;
   updateMaterial: (props: Partial<MaterialProps>) => void;
@@ -79,17 +82,34 @@ export const useMeshStore = create<MeshState>((set) => ({
   actionTrigger: null,
   isLoading: false,
   error: null,
+  globalUnit: 'mm',
   
+  setGlobalUnit: (unit) => set({ globalUnit: unit }),
+
   loadMeshFromFile: async (filePath: string) => {
     set({ isLoading: true, error: null });
     try {
       const data = await invoke<MeshData>('load_mesh', { path: filePath });
+      // Calcula o bounding box base real da malha para usarmos nas dimensões reais
+      let minX = Infinity, minY = Infinity, minZ = Infinity;
+      let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+      for (let i = 0; i < data.vertices.length; i += 3) {
+         const x = data.vertices[i], y = data.vertices[i+1], z = data.vertices[i+2];
+         if (x < minX) minX = x; if (x > maxX) maxX = x;
+         if (y < minY) minY = y; if (y > maxY) maxY = y;
+         if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+      }
+      const sizeX = maxX - minX;
+      const sizeY = maxY - minY;
+      const sizeZ = maxZ - minZ;
+
       const newObj: SceneObject = {
         id: generateId(),
         type: 'mesh',
         meshData: data,
         materialProps: { ...defaultMaterial },
-        transformData: { ...defaultTransform }
+        transformData: { ...defaultTransform },
+        baseSize: [sizeX, sizeY, sizeZ]
       };
       set((state) => ({ 
         objects: [...state.objects, newObj], 
@@ -103,11 +123,17 @@ export const useMeshStore = create<MeshState>((set) => ({
   },
 
   loadPrimitive: (type) => {
+    let size: [number, number, number] = [1, 1, 1];
+    if (type === 'cube') size = [2, 2, 2];
+    if (type === 'sphere') size = [3, 3, 3];
+    if (type === 'cylinder') size = [3, 3, 3];
+
     const newObj: SceneObject = {
       id: generateId(),
       type: type,
       materialProps: { ...defaultMaterial },
-      transformData: { ...defaultTransform }
+      transformData: { ...defaultTransform },
+      baseSize: size
     };
     set((state) => ({ 
       objects: [...state.objects, newObj],
